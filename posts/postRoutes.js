@@ -36,6 +36,7 @@ router.post("/", (req, res) => {
   }
 });
 
+// update post
 router.put("/:id", (req, res) => {
   const { id } = req.params;
   const changedPost = req.body;
@@ -57,12 +58,33 @@ router.put("/:id", (req, res) => {
           .json({ error: "The post information could not be modified." });
       });
   } else {
-    res
-      .status(400)
-      .json({
-        errorMessage: "Please provide title and contents for the post."
-      });
+    res.status(400).json({
+      errorMessage: "Please provide title and contents for the post."
+    });
   }
+});
+
+// get all comments for s pecific post ID
+router.get("/:id/comments", (req, res) => {
+  const { id } = req.params;
+
+  db.findPostComments(id)
+    .then(result => {
+      // if return is not an empty array, there are comments to send
+      if (result.length !== 0) {
+        res.status(200).json(result);
+        // must be empty array returned
+      } else {
+        res
+          .status(404)
+          .json({ message: "The post with the specified ID does not exist." });
+      }
+    })
+    .catch(err => {
+      res
+        .status(500)
+        .json({ error: "The comments information could not be retrieved." });
+    });
 });
 
 module.exports = router;
