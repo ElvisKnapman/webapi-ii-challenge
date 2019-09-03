@@ -15,6 +15,27 @@ router.get("/", (req, res) => {
     });
 });
 
+// find specific post by ID
+router.get("/:id", (req, res) => {
+  const { id } = req.params;
+
+  db.findById(id)
+    .then(result => {
+      if (result.length !== 0) {
+        res.status(200).json(result);
+      } else {
+        res
+          .status(404)
+          .json({ message: "The post with the specified ID does not exist." });
+      }
+    })
+    .catch(err => {
+      res
+        .status(500)
+        .json({ error: "The post information could not be retrieved." });
+    });
+});
+
 // create new post
 router.post("/", (req, res) => {
   const newPost = req.body;
@@ -45,7 +66,7 @@ router.put("/:id", (req, res) => {
     db.update(id, changedPost)
       .then(result => {
         if (result) {
-          res.status(200).json(result);
+          res.status(200).json(changedPost);
         } else {
           res.status(404).json({
             message: "The post with the specified ID does not exist."
