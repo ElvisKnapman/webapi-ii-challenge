@@ -30,6 +30,33 @@ router.post("/", (req, res) => {
         });
       });
   } else {
+    res.status(400).json({
+      errorMessage: "Please provide title and contents for the post."
+    });
+  }
+});
+
+router.put("/:id", (req, res) => {
+  const { id } = req.params;
+  const changedPost = req.body;
+
+  if (changedPost.title && changedPost.contents) {
+    db.update(id, changedPost)
+      .then(result => {
+        if (result) {
+          res.status(200).json(result);
+        } else {
+          res.status(404).json({
+            message: "The post with the specified ID does not exist."
+          });
+        }
+      })
+      .catch(err => {
+        res
+          .status(500)
+          .json({ error: "The post information could not be modified." });
+      });
+  } else {
     res
       .status(400)
       .json({
