@@ -85,6 +85,32 @@ router.put("/:id", (req, res) => {
   }
 });
 
+// delete a post
+router.delete("/:id", (req, res) => {
+  const { id } = req.params;
+  let deletedObject = {};
+  db.findById(id)
+    .then(result => {
+      // if it's not an array
+      if (!Array.isArray(result)) {
+        deletedObject = result;
+      }
+      return db.remove(id);
+    })
+    .then(result => {
+      if (result) {
+        res.status(200).json(deletedObject);
+      } else {
+        res
+          .status(404)
+          .json({ message: "The post with the specified ID does not exist." });
+      }
+    })
+    .catch(err => {
+      res.status(500).json({ error: "The post could not be removed" });
+    });
+});
+
 // get all comments for s pecific post ID
 router.get("/:id/comments", (req, res) => {
   const { id } = req.params;
@@ -105,6 +131,37 @@ router.get("/:id/comments", (req, res) => {
       res
         .status(500)
         .json({ error: "The comments information could not be retrieved." });
+    });
+});
+
+router.post("/:id/comments", (req, res) => {
+  const { id } = req.params;
+  const newComment = req.body;
+
+  db.findById(id)
+    .then(response => {
+      if (response.length === 0) {
+        res
+          .status(404)
+          .json({ message: "The post with the specified id does not exist" });
+
+        // if no text
+      } else if (!newComment) {
+        res
+          .status(400)
+          .json({ message: "Please provide text for the comment" });
+      } else {
+        newComment.post_id = id;
+        db.insertComment(newComment).then(response => {
+          console.log(response);
+          res.status(201).json(response);
+        });
+      }
+    })
+    .catch(error => {
+      res.status(500).json({
+        error: "There was an error while saving the comment to the database"
+      });
     });
 });
 
